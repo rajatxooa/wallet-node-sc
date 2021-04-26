@@ -55,6 +55,8 @@ var Chaincode = class {
       throw new Error('Insufficient input');
     }
 
+    // TODO add check. only certain pkey can invoke this fcn
+
     // Get the existing wallet amount
     let existingBalanceBytes = await stub.getState(A);
     if (!existingBalanceBytes) {
