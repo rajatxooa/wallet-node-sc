@@ -16,6 +16,13 @@
 
 const shim = require('fabric-shim');
 const util = require('util');
+const adminPKeys = ["eDUwOTo6Q049MDgzNjFhZWItMjQ1ZC00ZTc0LTg5YzQtODYyYzk3Yjk0Mjk1LE9VPWNsaWVudCtPVT1vcmcxK09VPXVjeW1yZTR0OXoybXI5anRhcjc6OkNOPWNhLm9yZzEuZXhhbXBsZS5jb20sTz1vcmcxLmV4YW1wbGUuY29tLEw9U2FuIEZyYW5jaXNjbyxTVD1DYWxpZm9ybmlhLEM9VVM="];  // add keys here
+
+async function verifyAdminAccess(stub) {
+  if (!adminPKeys.includes(stub.getIDBytes())) {
+    throw new Error("Unauthorized");
+  }
+}
 
 var Chaincode = class {
 
@@ -42,6 +49,7 @@ var Chaincode = class {
       return shim.error(err);
     }
   }
+  
 
   async load(stub, args) {
     if (args.length != 2) {
@@ -51,7 +59,8 @@ var Chaincode = class {
     let A = args[0];  // pub key
     let B = args[1];  // amount
 
-    // TODO add check. only admin pkey can invoke this fcn
+    // only admin pkey can invoke this fcn
+    await verifyAdminAccess(stub);
 
     // Get the existing wallet amount
     let existingBalanceBytes = await stub.getState(A);
@@ -81,8 +90,8 @@ var Chaincode = class {
       throw new Error('asset holding must not be empty');
     }
 
-    // TODO add check. only admin pkey can invoke this fcn
-
+    // only admin pkey can invoke this fcn
+    await verifyAdminAccess(stub);
 
     let amount = parseInt(args[2]);
     if (typeof amount !== 'number' || amount <= 0) {
@@ -124,8 +133,9 @@ var Chaincode = class {
     let A = args[0];  // pub key
     let B = args[1];  // amount
 
-    // TODO add check. only admin pkey can invoke this fcn
-
+    // only admin pkey can invoke this fcn
+    await verifyAdminAccess(stub);
+    
     // Get the existing wallet amount
     let existingBalanceBytes = await stub.getState(A);
 
@@ -172,7 +182,8 @@ var Chaincode = class {
       throw new Error('Incorrect number of arguments. Expecting 1');
     }
 
-    let A = args[0];
+    await verifyAdminAccess(stub);
+    let A = args[0];    // only admin pkey can invoke this fcn
 
     // Delete the key from the state in ledger
     await stub.deleteState(A);
