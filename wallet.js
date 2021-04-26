@@ -51,11 +51,7 @@ var Chaincode = class {
     let A = args[0];  // pub key
     let B = args[1];  // amount
 
-    if (!A || !B) {
-      throw new Error('Insufficient input');
-    }
-
-    // TODO add check. only certain pkey can invoke this fcn
+    // TODO add check. only admin pkey can invoke this fcn
 
     // Get the existing wallet amount
     let existingBalanceBytes = await stub.getState(A);
@@ -89,12 +85,15 @@ var Chaincode = class {
       throw new Error('asset holding must not be empty');
     }
 
+    // TODO add check. only admin pkey can invoke this fcn
+
+
     let amount = parseInt(args[2]);
     if (typeof amount !== 'number' || amount <= 0) {
       throw new Error('Expecting integer value for amount to be transferred');
     }
 
-    // Get the state from the ledger
+    // Get the balance from the ledger
     let Avalbytes = await stub.getState(FromPublicKey);
     if (!Avalbytes) {
       throw new Error('Load balance');
@@ -127,7 +126,7 @@ var Chaincode = class {
 
   async querywalletAmount(stub, args) {
     if (args.length != 1) {
-      throw new Error('Incorrect number of arguments. Expecting public key to query')
+      throw new Error('Incorrect number of arguments. Expecting 1')
     }
 
     let jsonResp = {};
