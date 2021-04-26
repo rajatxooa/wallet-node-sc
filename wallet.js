@@ -45,7 +45,7 @@ var Chaincode = class {
 
   async load(stub, args) {
     if (args.length != 2) {
-      throw new Error('Incorrect number of arguments. Expecting 3');
+      throw new Error('Incorrect number of arguments. Expecting 2');
     }
 
     let A = args[0];  // pub key
@@ -82,6 +82,24 @@ var Chaincode = class {
 
   async payout(stub, args) {
 
+  }
+
+  async querywalletAmount(stub, args) {
+    if (args.length != 1) {
+      throw new Error('Incorrect number of arguments. Expecting public key to query')
+    }
+
+    let jsonResp = {};
+    let A = args[0];
+
+    // Get the state from the ledger
+    let Avalbytes = await stub.getState(A);
+
+    jsonResp.PublicKey = A;
+    jsonResp.Amount = Avalbytes ? Avalbytes.toString() : '0'; // default amount is 0
+    console.info('Query Response:');
+    console.info(jsonResp);
+    return Avalbytes;
   }
 
   async invoke(stub, args) {
@@ -134,29 +152,6 @@ var Chaincode = class {
 
     // Delete the key from the state in ledger
     await stub.deleteState(A);
-  }
-
-  // query callback representing the query of a chaincode
-  async query(stub, args) {
-    if (args.length != 1) {
-      throw new Error('Incorrect number of arguments. Expecting name of the person to query')
-    }
-
-    let jsonResp = {};
-    let A = args[0];
-
-    // Get the state from the ledger
-    let Avalbytes = await stub.getState(A);
-    if (!Avalbytes) {
-      jsonResp.error = 'Failed to get state for ' + A;
-      throw new Error(JSON.stringify(jsonResp));
-    }
-
-    jsonResp.name = A;
-    jsonResp.amount = Avalbytes.toString();
-    console.info('Query Response:');
-    console.info(jsonResp);
-    return Avalbytes;
   }
 };
 
