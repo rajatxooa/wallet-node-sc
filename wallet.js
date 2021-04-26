@@ -79,6 +79,45 @@ var Chaincode = class {
   }
 
   async transfer(stub, args) {
+    if (args.length != 3) {
+      throw new Error('Incorrect number of arguments. Expecting 3');
+    }
+
+    let FromPublicKey = args[0];
+    let ToPublicKey = args[1];
+    if (!FromPublicKey || !ToPublicKey) {
+      throw new Error('asset holding must not be empty');
+    }
+
+    let amount = parseInt(args[2]);
+    if (typeof amount !== 'number' || amount <= 0) {
+      throw new Error('Expecting integer value for amount to be transferred');
+    }
+
+    // Get the state from the ledger
+    let Avalbytes = await stub.getState(FromPublicKey);
+    if (!Avalbytes) {
+      throw new Error('Load balance');
+    }
+    let Aval = parseInt(Avalbytes.toString());
+
+    if (Aval < amount) {
+      throw new Error('Load balance');
+    }
+    
+    let Bvalbytes = await stub.getState(ToPublicKey);
+
+    let Bval = Bvalbytes ? parseInt(Bvalbytes.toString()) : 0;
+    // Perform the execution
+
+
+    Aval = Aval - amount;
+    Bval = Bval + amount;
+    console.info(util.format('Aval = %d, Bval = %d\n', Aval, Bval));
+
+    // Write the states back to the ledger
+    await stub.putState(FromPublicKey, Buffer.from(Aval.toString()));
+    await stub.putState(ToPublicKey, Buffer.from(Bval.toString()));
 
   }
 
@@ -102,46 +141,6 @@ var Chaincode = class {
     console.info('Query Response:');
     console.info(jsonResp);
     return Avalbytes;
-  }
-
-  async invoke(stub, args) {
-    if (args.length != 3) {
-      throw new Error('Incorrect number of arguments. Expecting 3');
-    }
-
-    let A = args[0];
-    let B = args[1];
-    if (!A || !B) {
-      throw new Error('asset holding must not be empty');
-    }
-
-    // Get the state from the ledger
-    let Avalbytes = await stub.getState(A);
-    if (!Avalbytes) {
-      throw new Error('Failed to get state of asset holder A');
-    }
-    let Aval = parseInt(Avalbytes.toString());
-
-    let Bvalbytes = await stub.getState(B);
-    if (!Bvalbytes) {
-      throw new Error('Failed to get state of asset holder B');
-    }
-
-    let Bval = parseInt(Bvalbytes.toString());
-    // Perform the execution
-    let amount = parseInt(args[2]);
-    if (typeof amount !== 'number') {
-      throw new Error('Expecting integer value for amount to be transaferred');
-    }
-
-    Aval = Aval - amount;
-    Bval = Bval + amount;
-    console.info(util.format('Aval = %d, Bval = %d\n', Aval, Bval));
-
-    // Write the states back to the ledger
-    await stub.putState(A, Buffer.from(Aval.toString()));
-    await stub.putState(B, Buffer.from(Bval.toString()));
-
   }
 
   // Deletes an entity from state
