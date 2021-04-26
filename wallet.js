@@ -148,7 +148,7 @@ var Chaincode = class {
     await stub.putState(A, Buffer.from(walletBalance.toString()));
   }
 
-  async querywalletAmount(stub, args) {
+  async queryBalance(stub, args) {
     if (args.length != 1) {
       throw new Error('Incorrect number of arguments. Expecting 1')
     }
