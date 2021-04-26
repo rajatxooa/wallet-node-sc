@@ -19,7 +19,7 @@ const util = require('util');
 const adminPKeys = ["eDUwOTo6Q049MDgzNjFhZWItMjQ1ZC00ZTc0LTg5YzQtODYyYzk3Yjk0Mjk1LE9VPWNsaWVudCtPVT1vcmcxK09VPXVjeW1yZTR0OXoybXI5anRhcjc6OkNOPWNhLm9yZzEuZXhhbXBsZS5jb20sTz1vcmcxLmV4YW1wbGUuY29tLEw9U2FuIEZyYW5jaXNjbyxTVD1DYWxpZm9ybmlhLEM9VVM="];  // add keys here
 
 async function verifyAdminAccess(stub) {
-  if (!adminPKeys.includes(stub.getIDBytes())) {
+  if (!adminPKeys.includes(stub.getIDBytes().toString())) {
     throw new Error("Unauthorized");
   }
 }
