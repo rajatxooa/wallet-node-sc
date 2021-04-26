@@ -55,16 +55,12 @@ var Chaincode = class {
 
     // Get the existing wallet amount
     let existingBalanceBytes = await stub.getState(A);
-    if (!existingBalanceBytes) {
-      // if doesnot exists then create new
-      existingBalanceBytes = 0;
-    }
-    let walletBalance = parseInt(existingBalanceBytes.toString());
+    let walletBalance = parseInt(existingBalanceBytes ? existingBalanceBytes.toString(): '0');
 
     // Perform the loading of amount
     let amount = parseInt(B);
     if (typeof amount !== 'number') {
-      throw new Error('Expecting integer value for amount to be transaferred');
+      throw new Error('Expecting integer value for amount to be transferred');
     }
 
     walletBalance = walletBalance + amount;
@@ -121,7 +117,35 @@ var Chaincode = class {
   }
 
   async payout(stub, args) {
+    if (args.length != 2) {
+      throw new Error('Incorrect number of arguments. Expecting 2');
+    }
 
+    let A = args[0];  // pub key
+    let B = args[1];  // amount
+
+    // TODO add check. only admin pkey can invoke this fcn
+
+    // Get the existing wallet amount
+    let existingBalanceBytes = await stub.getState(A);
+
+    let walletBalance = parseInt(existingBalanceBytes ? existingBalanceBytes.toString(): '0');
+
+    // Perform the loading of amount
+    let amount = parseInt(B);
+    if (typeof amount !== 'number') {
+      throw new Error('Expecting integer value for amount to be transferred');
+    }
+
+    if (walletBalance < amount) {
+      throw new Error('Insufficient funds');
+    }
+
+    walletBalance = walletBalance - amount; // deduct amount from wallet
+    console.info(util.format('walletBalance = %d', walletBalance));
+
+    // Write the states back to the ledger
+    await stub.putState(A, Buffer.from(walletBalance.toString()));
   }
 
   async querywalletAmount(stub, args) {
